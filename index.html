@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Miner Clicker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0b1d3a;
+            color: #ffffff;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .game-container {
+            margin-top: 50px;
+        }
+
+        .asteroid {
+            width: 150px;
+            height: 150px;
+            background: url('https://via.placeholder.com/150') no-repeat center;
+            background-size: cover;
+            margin: 20px auto;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        .stats {
+            margin: 20px;
+        }
+
+        .upgrade-button {
+            display: inline-block;
+            margin: 10px;
+            padding: 10px 20px;
+            background-color: #2a8bf2;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .upgrade-button:hover {
+            background-color: #1a6bc2;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Space Miner Clicker</h1>
+        <div class="stats">
+            <p>Minerals Collected: <span id="mineral-count">0</span></p>
+        </div>
+        <div class="asteroid" id="asteroid"></div>
+        <div class="upgrades">
+            <button class="upgrade-button" id="upgrade-tool">Upgrade Tool (Cost: 50)</button>
+            <button class="upgrade-button" id="hire-auto-miner">Hire Auto-Miner (Cost: 100)</button>
+        </div>
+    </div>
+    <div class="footer">
+        <p>Space Miner Clicker &copy; 2024</p>
+    </div>
+
+    <script>
+        // Game Variables
+        let minerals = 0;
+        let mineralsPerClick = 1;
+        let autoMinerActive = false;
+        let autoMinerCost = 100;
+        let upgradeCost = 50;
+
+        // DOM Elements
+        const mineralCount = document.getElementById('mineral-count');
+        const asteroid = document.getElementById('asteroid');
+        const upgradeToolButton = document.getElementById('upgrade-tool');
+        const hireAutoMinerButton = document.getElementById('hire-auto-miner');
+
+        // Click to Mine
+        asteroid.addEventListener('click', () => {
+            minerals += mineralsPerClick;
+            updateMineralCount();
+        });
+
+        // Upgrade Tool
+        upgradeToolButton.addEventListener('click', () => {
+            if (minerals >= upgradeCost) {
+                minerals -= upgradeCost;
+                mineralsPerClick += 1;
+                upgradeCost += 50; // Increase cost for next upgrade
+                upgradeToolButton.textContent = `Upgrade Tool (Cost: ${upgradeCost})`;
+                updateMineralCount();
+            } else {
+                alert('Not enough minerals!');
+            }
+        });
+
+        // Hire Auto-Miner
+        hireAutoMinerButton.addEventListener('click', () => {
+            if (!autoMinerActive && minerals >= autoMinerCost) {
+                minerals -= autoMinerCost;
+                autoMinerActive = true;
+                hireAutoMinerButton.disabled = true; // Disable button after purchase
+                updateMineralCount();
+                startAutoMiner();
+            } else if (!autoMinerActive) {
+                alert('Not enough minerals!');
+            }
+        });
+
+        // Auto-Miner Function
+        function startAutoMiner() {
+            setInterval(() => {
+                minerals += 5; // Auto-miner adds 5 minerals every second
+                updateMineralCount();
+            }, 1000);
+        }
+
+        // Update Mineral Count
+        function updateMineralCount() {
+            mineralCount.textContent = minerals;
+        }
+    </script>
+</body>
+</html>
