@@ -12,6 +12,7 @@
             text-align: center;
             margin: 0;
             padding: 0;
+            overflow: hidden;
         }
 
         .game-container {
@@ -48,6 +49,15 @@
             background-color: #1a6bc2;
         }
 
+        .enemy {
+            width: 50px;
+            height: 50px;
+            background: red;
+            position: absolute;
+            top: 0;
+            border-radius: 50%;
+        }
+
         .footer {
             margin-top: 30px;
             font-size: 14px;
@@ -60,11 +70,13 @@
         <h1>Space Miner Clicker</h1>
         <div class="stats">
             <p>Minerals Collected: <span id="mineral-count">0</span></p>
+            <p>Enemies Defeated: <span id="enemy-count">0</span></p>
         </div>
         <div class="asteroid" id="asteroid"></div>
         <div class="upgrades">
             <button class="upgrade-button" id="upgrade-tool">Upgrade Tool (Cost: 50)</button>
             <button class="upgrade-button" id="hire-auto-miner">Hire Auto-Miner (Cost: 100)</button>
+            <button class="upgrade-button" id="hire-soldier">Hire Soldier (Cost: 200)</button>
         </div>
     </div>
     <div class="footer">
@@ -75,15 +87,24 @@
         // Game Variables
         let minerals = 0;
         let mineralsPerClick = 1;
-        let autoMinerActive = false;
+        let autoMinerRate = 0; // Minerals per second from auto-miners
         let autoMinerCost = 100;
         let upgradeCost = 50;
+        let autoMinerCount = 0; // Number of auto-miners purchased
+
+        let soldierCount = 0; // Number of soldiers purchased
+        let soldierCost = 200;
+        let enemiesDefeated = 0;
+
+        let enemies = [];
 
         // DOM Elements
         const mineralCount = document.getElementById('mineral-count');
         const asteroid = document.getElementById('asteroid');
         const upgradeToolButton = document.getElementById('upgrade-tool');
         const hireAutoMinerButton = document.getElementById('hire-auto-miner');
+        const hireSoldierButton = document.getElementById('hire-soldier');
+        const enemyCountDisplay = document.getElementById('enemy-count');
 
         // Click to Mine
         asteroid.addEventListener('click', () => {
@@ -106,13 +127,27 @@
 
         // Hire Auto-Miner
         hireAutoMinerButton.addEventListener('click', () => {
-            if (!autoMinerActive && minerals >= autoMinerCost) {
+            if (minerals >= autoMinerCost) {
                 minerals -= autoMinerCost;
-                autoMinerActive = true;
-                hireAutoMinerButton.disabled = true; // Disable button after purchase
+                autoMinerCount += 1; // Increment auto-miner count
+                autoMinerRate += 5; // Each auto-miner adds 5 minerals per second
+                autoMinerCost = Math.floor(autoMinerCost * 1.5); // Increase cost for next auto-miner
+                hireAutoMinerButton.textContent = `Hire Auto-Miner (Cost: ${autoMinerCost})`;
                 updateMineralCount();
-                startAutoMiner();
-            } else if (!autoMinerActive) {
+            } else {
+                alert('Not enough minerals!');
+            }
+        });
+
+        // Hire Soldier
+        hireSoldierButton.addEventListener('click', () => {
+            if (minerals >= soldierCost) {
+                minerals -= soldierCost;
+                soldierCount += 1; // Increment soldier count
+                soldierCost = Math.floor(soldierCost * 1.5); // Increase cost for next soldier
+                hireSoldierButton.textContent = `Hire Soldier (Cost: ${soldierCost})`;
+                updateMineralCount();
+            } else {
                 alert('Not enough minerals!');
             }
         });
@@ -120,15 +155,69 @@
         // Auto-Miner Function
         function startAutoMiner() {
             setInterval(() => {
-                minerals += 5; // Auto-miner adds 5 minerals every second
+                minerals += autoMinerRate; // Collect minerals based on the total rate
                 updateMineralCount();
-            }, 1000);
+            }, 1000); // Run every second
+        }
+
+        // Spawn Enemies
+        function spawnEnemy() {
+            const enemy = document.createElement('div');
+            enemy.classList.add('enemy');
+            enemy.style.left = `${Math.random() * window.innerWidth}px`;
+            document.body.appendChild(enemy);
+
+            enemies.push({
+                element: enemy,
+                position: 0
+            });
+        }
+
+        // Move Enemies
+        function moveEnemies() {
+            enemies.forEach((enemy, index) => {
+                enemy.position += 2;
+                enemy.element.style.top = `${enemy.position}px`;
+
+                // Check if enemy reaches the bottom
+                if (enemy.position > window.innerHeight - 50) {
+                    enemy.element.remove();
+                    enemies.splice(index, 1);
+
+                    if (autoMinerCount > 0) {
+                        autoMinerCount -= 1;
+                        autoMinerRate -= 5;
+                    }
+                }
+
+                // Check for soldier defense
+                if (soldierCount > 0) {
+                    enemy.element.remove();
+                    enemies.splice(index, 1);
+                    enemiesDefeated += 1;
+                    updateEnemyCount();
+                }
+            });
         }
 
         // Update Mineral Count
         function updateMineralCount() {
             mineralCount.textContent = minerals;
         }
+
+        // Update Enemy Count
+        function updateEnemyCount() {
+            enemyCountDisplay.textContent = enemiesDefeated;
+        }
+
+        // Start Auto-Miner Process
+        startAutoMiner();
+
+        // Start Enemy Spawner
+        setInterval(spawnEnemy, 3000); // Spawn enemy every 3 seconds
+
+        // Move Enemies Loop
+        setInterval(moveEnemies, 50); // Move enemies every 50ms
     </script>
 </body>
 </html>
