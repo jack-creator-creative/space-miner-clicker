@@ -76,24 +76,6 @@
             border-radius: 50%;
         }
 
-        .store {
-            display: none;
-            position: absolute;
-            top: 20%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px #000;
-        }
-
-        .store button {
-            margin: 10px;
-            padding: 10px;
-            font-size: 16px;
-        }
-
         .footer {
             margin-top: 30px;
             font-size: 14px;
@@ -112,17 +94,10 @@
         </div>
         <div class="asteroid" id="asteroid"></div>
         <div class="upgrades">
-            <button class="upgrade-button" id="upgrade-tool">Upgrade Tool (Cost: 50)</button>
-            <button class="upgrade-button" id="hire-auto-miner">Hire Auto-Miner (Cost: 100)</button>
-            <button class="upgrade-button" id="hire-soldier">Hire Soldier (Cost: 200)</button>
-            <button class="upgrade-button" id="open-store">Store</button>
+            <button class="upgrade-button" id="upgrade-tool">Upgrade Tool (Cost: 50) <span id="tool-upgrades">0</span></button>
+            <button class="upgrade-button" id="hire-auto-miner">Hire Auto-Miner (Cost: 100) <span id="miner-upgrades">0</span></button>
+            <button class="upgrade-button" id="hire-soldier">Hire Soldier (Cost: 200) <span id="soldier-upgrades">0</span></button>
         </div>
-    </div>
-    <div class="store" id="store">
-        <h2>Store</h2>
-        <p>Soldiers Purchased: <span id="store-soldiers">0</span></p>
-        <p>Auto-Miners Purchased: <span id="store-miners">0</span></p>
-        <button onclick="closeStore()">Close</button>
     </div>
     <div class="footer">
         <p>Space Miner Clicker &copy; 2024</p>
@@ -141,8 +116,6 @@
         let soldierCost = 200;
         let enemiesDefeated = 0;
 
-        let storeSoldiers = 0;
-        let storeMiners = 0;
         let enemies = [];
 
         // DOM Elements
@@ -151,13 +124,12 @@
         const upgradeToolButton = document.getElementById('upgrade-tool');
         const hireAutoMinerButton = document.getElementById('hire-auto-miner');
         const hireSoldierButton = document.getElementById('hire-soldier');
-        const openStoreButton = document.getElementById('open-store');
         const enemyCountDisplay = document.getElementById('enemy-count');
         const soldierCountDisplay = document.getElementById('soldier-count');
         const autoMinerCountDisplay = document.getElementById('auto-miner-count');
-        const store = document.getElementById('store');
-        const storeSoldiersDisplay = document.getElementById('store-soldiers');
-        const storeMinersDisplay = document.getElementById('store-miners');
+        const toolUpgradesDisplay = document.getElementById('tool-upgrades');
+        const minerUpgradesDisplay = document.getElementById('miner-upgrades');
+        const soldierUpgradesDisplay = document.getElementById('soldier-upgrades');
 
         // Click to Mine
         asteroid.addEventListener('click', () => {
@@ -172,6 +144,7 @@
                 mineralsPerClick += 1;
                 upgradeCost += 50; // Increase cost for next upgrade
                 upgradeToolButton.textContent = `Upgrade Tool (Cost: ${upgradeCost})`;
+                toolUpgradesDisplay.textContent = parseInt(toolUpgradesDisplay.textContent) + 1;
                 updateMineralCount();
             } else {
                 alert('Not enough minerals!');
@@ -183,13 +156,12 @@
             if (minerals >= autoMinerCost) {
                 minerals -= autoMinerCost;
                 autoMinerCount += 1; // Increment auto-miner count
-                storeMiners += 1; // Track purchases
                 autoMinerRate += 5; // Each auto-miner adds 5 minerals per second
                 autoMinerCost = Math.floor(autoMinerCost * 1.5); // Increase cost for next auto-miner
                 hireAutoMinerButton.textContent = `Hire Auto-Miner (Cost: ${autoMinerCost})`;
+                minerUpgradesDisplay.textContent = parseInt(minerUpgradesDisplay.textContent) + 1;
                 updateMineralCount();
                 updateAutoMinerCount();
-                updateStore();
                 spawnMiner();
             } else {
                 alert('Not enough minerals!');
@@ -201,27 +173,16 @@
             if (minerals >= soldierCost) {
                 minerals -= soldierCost;
                 soldierCount += 1; // Increment soldier count
-                storeSoldiers += 1; // Track purchases
                 soldierCost = Math.floor(soldierCost * 1.5); // Increase cost for next soldier
                 hireSoldierButton.textContent = `Hire Soldier (Cost: ${soldierCost})`;
+                soldierUpgradesDisplay.textContent = parseInt(soldierUpgradesDisplay.textContent) + 1;
                 updateMineralCount();
                 updateSoldierCount();
-                updateStore();
                 spawnSoldier();
             } else {
                 alert('Not enough minerals!');
             }
         });
-
-        // Open Store
-        openStoreButton.addEventListener('click', () => {
-            store.style.display = 'block';
-        });
-
-        // Close Store
-        function closeStore() {
-            store.style.display = 'none';
-        }
 
         // Auto-Miner Function
         function startAutoMiner() {
@@ -235,14 +196,53 @@
         function spawnEnemy() {
             const enemy = document.createElement('div');
             enemy.classList.add('enemy');
-            enemy.style.left = `${Math.random() * window.innerWidth}px`;
+            enemy.style.left = `${Math.random() * (window.innerWidth - 50)}px`;
             document.body.appendChild(enemy);
 
-            enemies.push({
-                element: enemy,
-                position: 0
-            });
+            let position = 0;
+            const interval = setInterval(() => {
+                position += 2;
+                enemy.style.top = `${position}px`;
+
+                if (position >= window.innerHeight - 50) {
+                    document.body.removeChild(enemy);
+                    clearInterval(interval);
+                }
+            }, 30);
         }
 
-        // Move Enemies
-        function moveEnemies
+        // Spawn Miner
+        function spawnMiner() {
+            const miner = document.createElement('div');
+            miner.classList.add('miner');
+            miner.style.left = `${Math.random() * (window.innerWidth - 50)}px`;
+            document.body.appendChild(miner);
+        }
+
+        // Spawn Soldier
+        function spawnSoldier() {
+            const soldier = document.createElement('div');
+            soldier.classList.add('soldier');
+            soldier.style.left = `${Math.random() * (window.innerWidth - 50)}px`;
+            document.body.appendChild(soldier);
+        }
+
+        // Update Counts
+        function updateMineralCount() {
+            mineralCount.textContent = minerals;
+        }
+
+        function updateAutoMinerCount() {
+            autoMinerCountDisplay.textContent = autoMinerCount;
+        }
+
+        function updateSoldierCount() {
+            soldierCountDisplay.textContent = soldierCount;
+        }
+
+        // Start the Game
+        startAutoMiner();
+        setInterval(spawnEnemy, 3000); // Spawn enemies every 3 seconds
+    </script>
+</body>
+</html>
